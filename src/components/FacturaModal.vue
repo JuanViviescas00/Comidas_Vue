@@ -18,7 +18,9 @@
           class="factura-item"
         >
           <span class="factura-item-cantidad">{{ item.cantidad }}x </span>
-          <span class="factura-item-nombre">{{ item.nombre }}</span>
+          <span class="factura-item-nombre">
+            <template v-if="item.categoria && item.categoria !== 'General'">{{ item.categoria }} · </template>{{ item.nombre }}
+          </span>
           <span class="factura-item-precio">{{ formatearPesos(item.subtotal) }}</span>
           <button 
             @click="quitarItem(item.nombre)" 
@@ -60,9 +62,6 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { jsPDF } from 'jspdf'
-
 const props = defineProps({
   mostrando: {
     type: Boolean,
