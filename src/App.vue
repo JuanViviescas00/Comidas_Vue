@@ -18,7 +18,7 @@
           </svg>
           Agregar Producto
         </button>
-        <button class="btn-cart" @click="mostrarFactura = !mostrarFactura">
+        <button class="btn-cart" @click="toggleFactura">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="9" cy="21" r="1"></circle>
             <circle cx="20" cy="21" r="1"></circle>
@@ -33,7 +33,9 @@
 
     <!-- Add Product Modal -->
     <AddProductForm 
-      :mostrando="mostrarFormulario" 
+      :mostrando="mostrarFormulario"
+      :categorias-comida="categoriasComidas"
+      :categorias-bebida="categoriasBebidas"
       @cerrar="mostrarFormulario = false"
       @producto-agregado="handleProductoAgregado"
     />
@@ -44,7 +46,7 @@
       <section class="menu-section">
         <div class="section-header">
           <div class="section-title-group">
-            <span class="section-emoji">🍕</span>
+            <span class="section-emoji"></span>
             <h2>Comidas</h2>
           </div>
         </div>
@@ -54,7 +56,7 @@
             :class="{ active: categoriaSeleccionadaComidas === 'Todas' }"
             @click="categoriaSeleccionadaComidas = 'Todas'"
           >
-            Todas
+            <span>Todas</span>
           </button>
           <button
             v-for="cat in categoriasComidas"
@@ -63,7 +65,7 @@
             :class="{ active: categoriaSeleccionadaComidas === cat }"
             @click="categoriaSeleccionadaComidas = cat"
           >
-            {{ cat }}
+            <span>{{ cat }}</span>
           </button>
         </div>
         <div class="menu-grid">
@@ -80,7 +82,7 @@
       <section class="menu-section">
         <div class="section-header">
           <div class="section-title-group">
-            <span class="section-emoji">🥤</span>
+            <span class="section-emoji"></span>
             <h2>Bebidas</h2>
           </div>
         </div>
@@ -90,7 +92,7 @@
             :class="{ active: categoriaSeleccionadaBebidas === 'Todas' }"
             @click="categoriaSeleccionadaBebidas = 'Todas'"
           >
-            Todas
+            <span>Todas</span>
           </button>
           <button
             v-for="cat in categoriasBebidas"
@@ -99,7 +101,7 @@
             :class="{ active: categoriaSeleccionadaBebidas === cat }"
             @click="categoriaSeleccionadaBebidas = cat"
           >
-            {{ cat }}
+            <span>{{ cat }}</span>
           </button>
         </div>
         <div class="menu-grid">
@@ -115,7 +117,7 @@
 
     <!-- Factura / Cart Panel -->
     <FacturaModal 
-      :mostrando="carrito.length > 0 && mostrarFactura"
+      :mostrando="mostrarFactura"
       :items="resumen_pedido"
       :total="total"
       @cerrar="mostrarFactura = false"
@@ -225,6 +227,14 @@ const formatearPesos = (valor) => {
   }).format(valor)
 }
 
+function toggleFactura() {
+  if (carrito.value.length === 0) {
+    mostrarFactura.value = false
+    return
+  }
+  mostrarFactura.value = !mostrarFactura.value
+}
+
 function agregarAlPedido(item) {
   // No agregar si no hay stock
   if (item.cantidad_disp <= 0) return
@@ -269,6 +279,7 @@ function actualizarResumenPedido() {
 }
 
 function limpiar() {
+  mostrarFactura.value = false
   // Restaurar stock de todos los items del carrito
   carrito.value.forEach(cartItem => {
     const comidaItem = comidas.value.find(c => c.nombre === cartItem.nombre)
@@ -685,33 +696,36 @@ body {
   content: '';
   position: absolute;
   inset: 0;
+  z-index: 0;
   border-radius: 50px;
   background: linear-gradient(135deg, #27ae60, #2ecc71);
   opacity: 0;
   transition: opacity 0.3s ease;
-  
+}
+
+.category-tag:hover,
+.category-tag.active {
+  border-color: transparent;
+  background: transparent;
+  color: #fff;
 }
 
 .category-tag:hover {
-  border-color: #27ae60;
-  color: #ffffff;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(39,174,96,0.18);
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.18);
 }
 
-.category-tag.active {
-  border-color: transparent;
-  color: #fff;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(39,174,96,0.35);
-}
-
+.category-tag:hover::before,
 .category-tag.active::before {
   opacity: 1;
 }
 
-.category-tag span,
-.category-tag {
+.category-tag.active {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(39, 174, 96, 0.35);
+}
+
+.category-tag span {
   position: relative;
   z-index: 1;
 }

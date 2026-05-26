@@ -72,16 +72,27 @@
           </select>
         </div>
 
-        <div class="campo-formulario" v-if="tipo === 'comida'">
-          <label for="categoria">Categoría (obligatoria para comidas):</label>
+        <div class="campo-formulario" v-if="tipo">
+          <label for="categoria">Categoría:</label>
           <input
             type="text"
             id="categoria"
             name="categoria"
             v-model="categoria"
+            list="categorias-existentes"
             required
-            placeholder="Ej: Hamburguesas, Tacos, Ensaladas..."
+            :placeholder="tipo === 'comida'
+              ? 'Ej: Hamburguesas, Pizzas, Tacos...'
+              : 'Ej: Jugos, Malteadas, Café...'"
           >
+          <datalist id="categorias-existentes">
+            <option
+              v-for="cat in categoriasDisponibles"
+              :key="cat"
+              :value="cat"
+            />
+          </datalist>
+          <span class="campo-ayuda">Elija una categoría existente o escriba una nueva</span>
         </div>
         
         <div class="acciones-formulario">
@@ -98,7 +109,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 function isNumber(value) {
   return value !== '' && value !== null && !Number.isNaN(Number(value))
@@ -113,6 +124,14 @@ const props = defineProps({
   titulo: {
     type: String,
     default: 'Agregar Nuevo Producto'
+  },
+  categoriasComida: {
+    type: Array,
+    default: () => []
+  },
+  categoriasBebida: {
+    type: Array,
+    default: () => []
   }
 })
 
@@ -125,9 +144,19 @@ const img = ref('')
 const tipo = ref('')
 const categoria = ref('')
 
+const categoriasDisponibles = computed(() => {
+  if (tipo.value === 'comida') return props.categoriasComida
+  if (tipo.value === 'bebida') return props.categoriasBebida
+  return []
+})
+
+watch(tipo, () => {
+  categoria.value = ''
+})
+
 function submitFormulario() {
   // Validación básica
-  if (!nombre.value || !img.value || !tipo.value || !isNumber(precio.value) || !isNumber(cantidad.value)) {
+  if (!nombre.value || !img.value || !tipo.value || !categoria.value.trim() || !isNumber(precio.value) || !isNumber(cantidad.value)) {
     alert('Por favor, complete todos los campos con valores válidos')
     return
   }
@@ -136,17 +165,12 @@ function submitFormulario() {
   const cantidadNumerica = Number(cantidad.value)
 
   const nuevoProducto = {
-    // `nombre` es lo que usan ProductCard/Carrito.
     nombre: nombre.value.trim(),
-    // `comida` es lo que usa App.vue en algunos flujos.
     comida: nombre.value.trim(),
+    categoria: categoria.value.trim(),
     precio: precioNumerico,
     cantidad_disp: Math.trunc(cantidadNumerica),
     img: img.value.trim()
-  }
-
-  if (tipo.value === 'comida') {
-    nuevoProducto.categoria = categoria.value.trim()
   }
 
   emit('producto-agregado', {
@@ -263,6 +287,13 @@ function cerrar() {
 .campo-formulario input::placeholder,
 .campo-formulario select::placeholder {
   color: #bdc3c7;
+}
+
+.campo-ayuda {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.8rem;
+  color: #7f8c8d;
 }
 
 .acciones-formulario {
