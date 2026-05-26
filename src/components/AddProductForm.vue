@@ -3,10 +3,10 @@
     <div class="formulario-contenedor">
       <div class="formulario-header">
         <h3>{{ titulo }}</h3>
-        <button @click="cerrar" class="btn-cerrar">×</button>
+        <button @click="cerrar" class="btn-cerrar">&times;</button>
       </div>
       
-      <form @submit.prevent="submitFormulario">
+      <form @submit.prevent="submitFormulario" novalidate>
         <div class="campo-formulario">
           <label for="nombre">Nombre:</label>
           <input 
@@ -16,7 +16,11 @@
             v-model="nombre"
             required
             placeholder="Ej: Hamburguesa Especial"
+            :class="{ 'campo-error': errores.nombre }"
           >
+          <div v-if="errores.nombre" class="mensaje-error">
+            {{ errores.nombre }}
+          </div>
         </div>
         
         <div class="campo-formulario">
@@ -30,7 +34,11 @@
             step="50"
             required
             placeholder="0.00"
+            :class="{ 'campo-error': errores.precio }"
           >
+          <div v-if="errores.precio" class="mensaje-error">
+            {{ errores.precio }}
+          </div>
         </div>
         
         <div class="campo-formulario">
@@ -43,7 +51,11 @@
             min="0"
             required
             placeholder="10"
+            :class="{ 'campo-error': errores.cantidad }"
           >
+          <div v-if="errores.cantidad" class="mensaje-error">
+            {{ errores.cantidad }}
+          </div>
         </div>
         
         <div class="campo-formulario">
@@ -55,7 +67,11 @@
             v-model="img"
             required
             placeholder="https://ejemplo.com/imagen.jpg"
+            :class="{ 'campo-error': errores.img }"
           >
+          <div v-if="errores.img" class="mensaje-error">
+            {{ errores.img }}
+          </div>
         </div>
         
         <div class="campo-formulario">
@@ -65,11 +81,15 @@
             name="tipo" 
             v-model="tipo"
             required
+            :class="{ 'campo-error': errores.tipo }"
           >
             <option value="">Seleccione tipo...</option>
             <option value="comida">Comida</option>
             <option value="bebida">Bebida</option>
           </select>
+          <div v-if="errores.tipo" class="mensaje-error">
+            {{ errores.tipo }}
+          </div>
         </div>
 
         <div class="campo-formulario" v-if="tipo">
@@ -84,6 +104,7 @@
             :placeholder="tipo === 'comida'
               ? 'Ej: Hamburguesas, Pizzas, Tacos...'
               : 'Ej: Jugos, Malteadas, Café...'"
+            :class="{ 'campo-error': errores.categoria }"
           >
           <datalist id="categorias-existentes">
             <option
@@ -92,6 +113,9 @@
               :value="cat"
             />
           </datalist>
+          <div v-if="errores.categoria" class="mensaje-error">
+            {{ errores.categoria }}
+          </div>
           <span class="campo-ayuda">Elija una categoría existente o escriba una nueva</span>
         </div>
         
@@ -110,11 +134,11 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
+import Swal from 'sweetalert2'
 
 function isNumber(value) {
   return value !== '' && value !== null && !Number.isNaN(Number(value))
 }
-
 
 const props = defineProps({
   mostrando: {
@@ -144,6 +168,15 @@ const img = ref('')
 const tipo = ref('')
 const categoria = ref('')
 
+const errores = ref({
+  nombre: '',
+  precio: '',
+  cantidad: '',
+  img: '',
+  tipo: '',
+  categoria: ''
+})
+
 const categoriasDisponibles = computed(() => {
   if (tipo.value === 'comida') return props.categoriasComida
   if (tipo.value === 'bebida') return props.categoriasBebida
@@ -154,10 +187,61 @@ watch(tipo, () => {
   categoria.value = ''
 })
 
+function limpiarErrores() {
+  errores.value = {
+    nombre: '',
+    precio: '',
+    cantidad: '',
+    img: '',
+    tipo: '',
+    categoria: ''
+  }
+}
+
+function validarFormulario() {
+  limpiarErrores()
+  let valido = true
+
+  if (!nombre.value || !nombre.value.trim()) {
+    errores.value.nombre = 'El nombre del producto es obligatorio'
+    valido = false
+  }
+  if (!isNumber(precio.value) || Number(precio.value) < 0) {
+    errores.value.precio = 'Ingrese un precio válido mayor o igual a 0'
+    valido = false
+  }
+  if (!isNumber(cantidad.value) || Number(cantidad.value) < 0) {
+    errores.value.cantidad = 'Ingrese una cantidad válida mayor o igual a 0'
+    valido = false
+  }
+  if (!img.value || !img.value.trim()) {
+    errores.value.img = 'La URL de imagen es obligatoria'
+    valido = false
+  }
+  if (!tipo.value) {
+    errores.value.tipo = 'Seleccione si es comida o bebida'
+    valido = false
+  }
+  if (tipo.value && (!categoria.value || !categoria.value.trim())) {
+    errores.value.categoria = 'La categoría es obligatoria'
+    valido = false
+  }
+
+  return valido
+}
+
 function submitFormulario() {
-  // Validación básica
-  if (!nombre.value || !img.value || !tipo.value || !categoria.value.trim() || !isNumber(precio.value) || !isNumber(cantidad.value)) {
-    alert('Por favor, complete todos los campos con valores válidos')
+  if (!validarFormulario()) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Campos incompletos',
+      text: 'Por favor, complete todos los campos con valores válidos',
+      confirmButtonColor: '#e74c3c',
+      customClass: {
+        popup: 'swal2-popup-custom',
+        confirmButton: 'swal2-btn-custom'
+      }
+    })
     return
   }
 
@@ -177,6 +261,19 @@ function submitFormulario() {
     producto: nuevoProducto,
     tipo: tipo.value
   })
+
+  Swal.fire({
+    icon: 'success',
+    title: 'Producto agregado',
+    text: `Producto "${nombre.value.trim()}" agregado exitosamente`,
+    confirmButtonColor: '#27ae60',
+    timer: 2500,
+    showConfirmButton: false,
+    customClass: {
+      popup: 'swal2-popup-custom',
+      confirmButton: 'swal2-btn-custom'
+    }
+  })
   
   // Reset formulario
   nombre.value = ''
@@ -185,12 +282,13 @@ function submitFormulario() {
   img.value = ''
   tipo.value = ''
   categoria.value = ''
-  
+  limpiarErrores()
   
   emit('cerrar')
 }
 
 function cerrar() {
+  limpiarErrores()
   emit('cerrar')
 }
 </script>
@@ -294,6 +392,20 @@ function cerrar() {
   margin-top: 6px;
   font-size: 0.8rem;
   color: #7f8c8d;
+}
+
+/* Estilos de validación (reemplazo de Bootstrap) */
+.campo-error {
+  border-color: #e74c3c !important;
+  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.15) !important;
+}
+
+.mensaje-error {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.85rem;
+  color: #e74c3c;
+  font-weight: 500;
 }
 
 .acciones-formulario {
