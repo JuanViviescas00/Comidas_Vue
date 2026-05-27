@@ -314,7 +314,29 @@ function cerrar() {
   width: 90%;
   max-width: 500px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+
+  /* Responsivo: permite scroll dentro del modal en pantallas pequeñas */
+  max-height: calc(100vh - 40px);
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
 }
+
+/* Permite scroll interno del contenido del form */
+.formulario-contenedor form {
+  overflow-y: auto;
+  padding-right: 6px;
+
+  /* evita que flex “rompa” el cálculo de altura del scroll */
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+.formulario-contenedor .acciones-formulario {
+  margin-top: auto;
+}
+
 
 .formulario-header {
   display: flex;

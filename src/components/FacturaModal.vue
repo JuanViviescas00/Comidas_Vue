@@ -44,17 +44,18 @@
         >
           Limpiar
         </button>
-        <button 
-          @click="cerrar" 
-          class="btn-cerrar-factura"
-        >
-          Cerrar
-        </button>
+       
         <button 
           @click="generarPDF" 
           class="btn-generar-pdf"
         >
-          Descargar PDF
+          Generar Factura
+        </button>
+         <button 
+          @click="cerrar" 
+          class="btn-cerrar-factura"
+        >
+          Cerrar
         </button>
       </div>
     </div>
@@ -119,6 +120,9 @@ function generarPDF() {
   z-index: 1000;
 
   transition: opacity 0.25s ease, visibility 0.25s ease;
+
+  /* si hace falta, permite scroll del overlay */
+  overflow: auto;
 }
 
 .factura-contenedor {
@@ -132,7 +136,13 @@ function generarPDF() {
   animation: fadeInUp 0.35s ease-out;
   overflow: hidden;
   border: 1px solid rgba(15, 23, 42, 0.06);
+
+  /* Para que el scroll funcione bien en móvil */
+  max-height: calc(100vh - 40px);
+  display: flex;
+  flex-direction: column;
 }
+
 
 
 @keyframes fadeInUp {
@@ -198,9 +208,27 @@ function generarPDF() {
 }
 
 .factura-items {
-  max-height: 200px;
+  /* Lista scrollable */
   overflow-y: auto;
   padding: 0 25px;
+
+  /* Ocupa el espacio restante del modal */
+  flex: 1;
+  min-height: 0;
+
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Contenedor interno para usar flex y controlar el scroll */
+.factura-contenedor {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Asegura que el overlay no se quede bloqueado por el scroll del fondo */
+.factura-modal {
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .factura-item {
