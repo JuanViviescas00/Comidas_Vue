@@ -19,14 +19,33 @@
         >
           <span class="factura-item-cantidad">{{ item.cantidad }}x </span>
           <span class="factura-item-nombre">
-            <template v-if="item.categoria && item.categoria !== 'General'">{{ item.categoria }} · </template>{{ item.nombre }}
+            <template v-if="item.categoria && item.categoria !== 'General'"></template>{{ item.nombre }}
           </span>
           <span class="factura-item-precio">{{ formatearPesos(item.subtotal) }}</span>
-          <button 
-            @click="quitarItem(item.nombre)" 
+          <button
+            type="button"
+            @click="quitarItem(item.nombre)"
             class="btn-quitar-item"
+            aria-label="Quitar item del carrito"
+            title="Quitar"
           >
-            −
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+              <path d="M10 11v6"></path>
+              <path d="M14 11v6"></path>
+              <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
+            </svg>
           </button>
         </div>
       </div>
@@ -256,6 +275,7 @@ function generarPDF() {
   flex-grow: 1;
   text-align: left;
   color: #34495e;
+  text-align: center;
 }
 
 .factura-item-precio {
@@ -266,24 +286,34 @@ function generarPDF() {
 }
 
 .btn-quitar-item {
-  background-color: #e74c3c;
-  color: white;
-  border: none;
-  width: 25px;
-  height: 25px;
-  border-radius: 50%;
+  background: rgba(231, 76, 60, 0.12);
+  color: #e74c3c;
+  border: 1px solid rgba(231, 76, 60, 0.35);
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
   cursor: pointer;
-  font-weight: bold;
-  font-size: 0.9rem;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+  box-shadow: 0 8px 18px rgba(231, 76, 60, 0.12);
+  margin: 10px
 }
 
 .btn-quitar-item:hover {
-  background-color: #c0392b;
-  transform: scale(1.1);
+  background: rgba(231, 76, 60, 0.18);
+  border-color: rgba(231, 76, 60, 0.55);
+  transform: translateY(-1px);
+}
+
+.btn-quitar-item:active {
+  transform: translateY(0);
+  box-shadow: 0 6px 14px rgba(231, 76, 60, 0.10);
+}
+
+.btn-quitar-item svg {
+  display: block;
 }
 
 .factura-total {

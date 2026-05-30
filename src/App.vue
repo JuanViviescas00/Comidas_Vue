@@ -589,7 +589,7 @@ body {
 }
 
 .brand-icon{
-  width: 10vh;
+  width: 15vh;
 }
 
 .brand-text h1 {
